@@ -2,6 +2,7 @@ package io.xsun.minecraft.chatsync.common.communication;
 
 import java.net.InetSocketAddress;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 public interface IChannel<MessageType> {
 
@@ -9,16 +10,14 @@ public interface IChannel<MessageType> {
 
     InetSocketAddress getRemoteAddress();
 
-    boolean isReady();
-
     void close();
 
     void send(MessageType message);
 
     void setMessageHandler(Consumer<MessageType> onMessage);
 
-    void setExceptionHandler(Consumer<Throwable> onException);
+    void setExceptionHandler(Predicate<Throwable> onException);
 
-    void setCloseHandler(Consumer<CloseReason> onClose);
+    void setCloseHandler(CloseHandler onClose);
 
 }

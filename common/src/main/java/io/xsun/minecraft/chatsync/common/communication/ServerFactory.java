@@ -13,4 +13,7 @@ public final class ServerFactory {
         return NettyServerBuilder.INSTANCE.newNettyTcpJsonServer(port);
     }
 
+    public static IServer<JsonObject> newWebsocketJsonServer(int port) {
+        return NettyServerBuilder.INSTANCE.newNettyWebsocketJsonServer(port);
+    }
 }

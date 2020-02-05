@@ -8,8 +8,6 @@ public interface IServer<MessageType> {
 
     InetSocketAddress getLocalAddress();
 
-    boolean isReady();
-
     void close();
 
     void setOnChannelConnected(Consumer<IChannel<MessageType>> onChannelConnected);

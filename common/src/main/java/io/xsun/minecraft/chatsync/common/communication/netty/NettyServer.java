@@ -23,17 +23,23 @@ class NettyServer<MessageType> implements IServer<MessageType> {
 
     protected NettyServer(EventLoopGroup boss, EventLoopGroup worker, int port,
                           ByteToMessageDecoder decoder, MessageToByteEncoder<MessageType> encoder) {
+        this(boss, worker, port, ch -> ch.pipeline().addLast(decoder, encoder));
+    }
+
+    protected NettyServer(EventLoopGroup boss, EventLoopGroup worker, int port,
+                          Consumer<SocketChannel> preInit) {
         ServerBootstrap bootstrap = new ServerBootstrap();
         bootstrap.group(boss, worker)
                 .channel(NioServerSocketChannel.class)
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     protected void initChannel(SocketChannel ch) throws Exception {
-                        ch.pipeline().addLast(decoder).addLast(encoder);
+                        preInit.accept(ch);
                         NettyChannel<MessageType> myChannel = new NettyChannel<>(ch, true);
                         ch.pipeline().addLast(new ChannelInboundHandlerAdapter() {
                             @Override
                             public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+                                super.channelInactive(ctx);
                                 connectedChannels.remove(myChannel);
                                 onChannelDisconnected.accept(myChannel);
                             }
@@ -50,11 +56,6 @@ class NettyServer<MessageType> implements IServer<MessageType> {
     @Override
     public InetSocketAddress getLocalAddress() {
         return (InetSocketAddress) parentChannel.localAddress();
-    }
-
-    @Override
-    public boolean isReady() {
-        return true;
     }
 
     @Override
