@@ -16,31 +16,35 @@ public class NettyChannel<MessageType> implements IChannel<MessageType> {
 
     private static final Logger LOG = LoggerFactory.getLogger(NettyChannel.class);
     private final SocketChannel nettyChannel;
-    private volatile Consumer<MessageType> onMessage = message -> LOG.debug(message.toString());
-    private volatile Predicate<Throwable> onException = exception -> {
-        LOG.error("Error", exception);
-        return true;
+    private volatile Consumer<MessageType> onMessage = message -> {
     };
-    private volatile CloseHandler onClose = () -> LOG.debug("Channel is closing");
+    private volatile Predicate<Throwable> onException = exception -> true;
+    private volatile CloseHandler onClose = () -> {
+    };
 
-    public NettyChannel(SocketChannel nettyChannel, boolean isServerSide) {
+    public NettyChannel(SocketChannel nettyChannel) {
+        LOG.info("Creating new NettyChannel of {}", nettyChannel);
         nettyChannel.pipeline()
                 .addLast(new ChannelInboundHandlerAdapter() {
                     @Override
                     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+                        LOG.debug("NettyChannel received a message [{}]", msg);
                         onMessage.accept((MessageType) msg);
                     }
 
                     @Override
                     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+                        LOG.warn("Exception caught in NettyChannel", cause);
                         boolean shouldClose = onException.test(cause);
                         if (shouldClose) {
+                            LOG.error("NettyChannel is closing because of an unexpected error");
                             NettyChannel.this.close();
                         }
                     }
 
                     @Override
                     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+                        LOG.info("Channel disconnected");
                         super.channelInactive(ctx);
                         onClose.onClose();
                     }
@@ -60,15 +64,18 @@ public class NettyChannel<MessageType> implements IChannel<MessageType> {
 
     @Override
     public void close() {
+        LOG.info("NettyChannel is closing");
         try {
             nettyChannel.close().sync();
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            LOG.warn("NettyChannel's closing process is interrupted", e);
         }
+        LOG.info("NettyChannel is closed");
     }
 
     @Override
     public void send(MessageType message) {
+        LOG.debug("NettyChannel is sending message [{}]", message);
         nettyChannel.writeAndFlush(message).syncUninterruptibly();
     }
 

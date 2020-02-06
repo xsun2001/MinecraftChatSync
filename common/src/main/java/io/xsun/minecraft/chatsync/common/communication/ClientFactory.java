@@ -4,12 +4,8 @@ import com.google.gson.JsonObject;
 
 import java.net.InetSocketAddress;
 
-public final class ClientFactory {
-    public static IChannel<JsonObject> connectToTcpJsonServer(InetSocketAddress address) {
-        return null;
-    }
+public interface ClientFactory {
+    IChannel<JsonObject> connectToTcpJsonServer(InetSocketAddress address);
 
-    public static IChannel<JsonObject> connectToWebsocketJsonServer(InetSocketAddress address) {
-        return null;
-    }
+    IChannel<JsonObject> connectToWebsocketJsonServer(InetSocketAddress address);
 }
