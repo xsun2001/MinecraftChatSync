@@ -44,7 +44,7 @@ public final class NettyEnvironment implements CommunicationEnvironment {
     public ClientFactory getClientFactory() {
         LOG.info("Creating new NettyClientFactory");
         checkInit();
-        return new NettyClientFactory(boss, worker);
+        return new NettyClientFactory(worker);
     }
 
     @Override
