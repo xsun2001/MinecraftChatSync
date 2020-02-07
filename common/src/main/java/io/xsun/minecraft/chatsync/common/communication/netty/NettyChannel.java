@@ -3,24 +3,17 @@ package io.xsun.minecraft.chatsync.common.communication.netty;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.socket.SocketChannel;
-import io.xsun.minecraft.chatsync.common.communication.CloseHandler;
+import io.xsun.minecraft.chatsync.common.communication.AbstractChannel;
 import io.xsun.minecraft.chatsync.common.communication.IChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
 
-public class NettyChannel<MessageType> implements IChannel<MessageType> {
+public class NettyChannel<MessageType> extends AbstractChannel<MessageType> implements IChannel<MessageType> {
 
     private static final Logger LOG = LoggerFactory.getLogger(NettyChannel.class);
     private final SocketChannel nettyChannel;
-    private volatile Consumer<MessageType> onMessage = message -> {
-    };
-    private volatile Predicate<Throwable> onException = exception -> true;
-    private volatile CloseHandler onClose = () -> {
-    };
 
     public NettyChannel(SocketChannel nettyChannel) {
         LOG.info("Creating new NettyChannel of {}", nettyChannel);
@@ -77,20 +70,5 @@ public class NettyChannel<MessageType> implements IChannel<MessageType> {
     public void send(MessageType message) {
         LOG.debug("NettyChannel is sending message [{}]", message);
         nettyChannel.writeAndFlush(message).syncUninterruptibly();
-    }
-
-    @Override
-    public void setMessageHandler(Consumer<MessageType> onMessage) {
-        this.onMessage = onMessage;
-    }
-
-    @Override
-    public void setExceptionHandler(Predicate<Throwable> onException) {
-        this.onException = onException;
-    }
-
-    @Override
-    public void setCloseHandler(CloseHandler onClose) {
-        this.onClose = onClose;
     }
 }
