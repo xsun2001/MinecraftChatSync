@@ -3,6 +3,7 @@ package io.xsun.minecraft.chatsync.common.communication.insideprotocol;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
+import io.xsun.minecraft.chatsync.common.communication.IProtocolResolver;
 import io.xsun.minecraft.chatsync.common.communication.insideprotocol.message.MessageBase;
 
 import java.io.IOException;
@@ -10,15 +11,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-public class ProtocolResolver {
+public class InsideIProtocolResolver implements IProtocolResolver<MessageBase> {
 
     private static final Gson GSON = new GsonBuilder().create();
     private Map<String, Class<? extends MessageBase>> typeNameMapping;
 
-    public ProtocolResolver() {
+    public InsideIProtocolResolver() {
         try {
             Properties mapping = new Properties();
-            mapping.load(ProtocolResolver.class.getResource("message/MessageTypeMapping.properties").openStream());
+            mapping.load(InsideIProtocolResolver.class.getResource("message/MessageTypeMapping.properties").openStream());
             typeNameMapping = new HashMap<>();
             mapping.forEach((o1, o2) -> {
                 try {
@@ -35,11 +36,13 @@ public class ProtocolResolver {
         }
     }
 
+    @Override
     public JsonObject toJson(MessageBase rawMsg) {
         return (JsonObject) GSON.toJsonTree(rawMsg);
     }
 
-    public MessageBase toMessage(JsonObject rawJson) {
+    @Override
+    public MessageBase fromJson(JsonObject rawJson) {
         String typeName = rawJson.get("type").getAsString();
         Class<? extends MessageBase> typeClass = typeNameMapping.get(typeName);
         if (typeClass == null) {

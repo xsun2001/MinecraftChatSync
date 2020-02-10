@@ -13,16 +13,16 @@ public class InsideChannel extends AbstractChannel<MessageBase> implements IChan
 
     private final static Logger LOG = LoggerFactory.getLogger(InsideChannel.class);
     private final IChannel<JsonObject> impl;
-    private final ProtocolResolver resolver;
+    private final InsideIProtocolResolver resolver;
 
     public InsideChannel(IChannel<JsonObject> impl) {
         LOG.info("Create InsideChannel with impl[{}]", impl);
         this.impl = impl;
-        resolver = new ProtocolResolver();
+        resolver = new InsideIProtocolResolver();
 
         impl.setMessageHandler(
                 json -> {
-                    MessageBase msg = resolver.toMessage(json);
+                    MessageBase msg = resolver.fromJson(json);
                     onMessage.accept(msg);
                 }
         );
