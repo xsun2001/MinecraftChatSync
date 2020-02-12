@@ -1,7 +1,7 @@
 package io.xsun.minecraft.chatsync.insidenode.common;
 
 import io.xsun.minecraft.chatsync.common.communication.*;
-import io.xsun.minecraft.chatsync.common.communication.insideprotocol.InsideIProtocolResolver;
+import io.xsun.minecraft.chatsync.common.communication.insideprotocol.InsideProtocolResolver;
 import io.xsun.minecraft.chatsync.common.communication.insideprotocol.message.ChatMessage;
 import io.xsun.minecraft.chatsync.common.communication.insideprotocol.message.MessageBase;
 import io.xsun.minecraft.chatsync.common.communication.insideprotocol.message.MessageSourceInfo;
@@ -25,7 +25,7 @@ public class InsideNode {
         this.mcServerApi = mcServerApi;
         this.log = mcServerApi.getLogger();
         this.clientFactory = commEnv.getClientFactory();
-        this.resolver = new InsideIProtocolResolver();
+        this.resolver = new InsideProtocolResolver();
         connectToMaster();
         initChannel();
     }

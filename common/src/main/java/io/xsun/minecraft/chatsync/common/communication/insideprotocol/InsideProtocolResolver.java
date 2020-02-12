@@ -11,15 +11,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-public class InsideIProtocolResolver implements IProtocolResolver<MessageBase> {
+public class InsideProtocolResolver implements IProtocolResolver<MessageBase> {
 
     private static final Gson GSON = new GsonBuilder().create();
     private Map<String, Class<? extends MessageBase>> typeNameMapping;
 
-    public InsideIProtocolResolver() {
+    public InsideProtocolResolver() {
         try {
             Properties mapping = new Properties();
-            mapping.load(InsideIProtocolResolver.class.getResource("message/MessageTypeMapping.properties").openStream());
+            mapping.load(InsideProtocolResolver.class.getResource("message/MessageTypeMapping.properties").openStream());
             typeNameMapping = new HashMap<>();
             mapping.forEach((o1, o2) -> {
                 try {
