@@ -8,6 +8,7 @@
         <outputRelativeToContentRoot value="true" />
         <module name="common" />
         <module name="master" />
+        <module name="insidenode-common" />
         <module name="common-annotations" />
       </profile>
     </annotationProcessing>

@@ -12,6 +12,7 @@
         <module>master</module>
         <module>common</module>
         <module>common-annotations</module>
+        <module>insidenode-common</module>
     </modules>
 
     <properties>
