@@ -2,8 +2,8 @@ package io.xsun.minecraft.chatsync.common.communication.netty;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
+import io.netty.channel.socket.ServerSocketChannel;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.codec.MessageToByteEncoder;
 import io.xsun.minecraft.chatsync.common.communication.IChannel;
@@ -27,17 +27,17 @@ class NettyServer<MessageType> implements IServer<MessageType> {
     private volatile Consumer<IChannel<MessageType>> onChannelDisconnected = ch -> {
     };
 
-    protected NettyServer(EventLoopGroup boss, EventLoopGroup worker, int port,
+    protected NettyServer(EventLoopGroup group, Class<? extends ServerSocketChannel> sscType, int port,
                           ByteToMessageDecoder decoder, MessageToByteEncoder<MessageType> encoder) {
-        this(boss, worker, port, ch -> ch.pipeline().addLast(decoder, encoder));
+        this(group, sscType, port, ch -> ch.pipeline().addLast(decoder, encoder));
     }
 
-    protected NettyServer(EventLoopGroup boss, EventLoopGroup worker, int port,
-                          Consumer<SocketChannel> preInit) {
+    protected NettyServer(EventLoopGroup group, Class<? extends ServerSocketChannel> sscType,
+                          int port, Consumer<SocketChannel> preInit) {
         LOG.info("NettyServer is creating on port {}", port);
         ServerBootstrap bootstrap = new ServerBootstrap();
-        bootstrap.group(boss, worker)
-                .channel(NioServerSocketChannel.class)
+        bootstrap.group(group)
+                .channel(sscType)
                 .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     protected void initChannel(SocketChannel ch) throws Exception {

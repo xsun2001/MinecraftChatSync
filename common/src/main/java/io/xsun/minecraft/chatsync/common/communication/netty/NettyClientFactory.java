@@ -4,7 +4,6 @@ import com.google.gson.JsonObject;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.http.DefaultHttpHeaders;
 import io.netty.handler.codec.http.HttpClientCodec;
 import io.netty.handler.codec.http.HttpObjectAggregator;
@@ -26,15 +25,17 @@ final class NettyClientFactory implements ClientFactory {
     private static final Logger LOG = LoggerFactory.getLogger(NettyClientFactory.class);
 
     private final EventLoopGroup worker;
+    private final Class<? extends SocketChannel> scType;
 
-    NettyClientFactory(EventLoopGroup worker) {
+    NettyClientFactory(EventLoopGroup worker, Class<? extends SocketChannel> scType) {
         this.worker = worker;
+        this.scType = scType;
     }
 
     private Bootstrap createBootstrap(ChannelInitializer<SocketChannel> initializer) {
         Bootstrap bootstrap = new Bootstrap();
         bootstrap.group(worker)
-                .channel(NioSocketChannel.class)
+                .channel(scType)
                 .option(ChannelOption.SO_KEEPALIVE, true)
                 .handler(initializer);
         return bootstrap;
