@@ -45,10 +45,12 @@ public class MessageTypeNameAnnotationProcessor extends AbstractProcessor {
                 mapping.setProperty(typeName, qualifiedName);
             }
         }
-        try {
-            mapping.store(mappingFile, "Made with love by xsun2001");
-        } catch (IOException e) {
-            messager.printMessage(Diagnostic.Kind.ERROR, e.getMessage());
+        if (annotations.size() > 0) {
+            try {
+                mapping.store(mappingFile, "Made with love by xsun2001");
+            } catch (IOException e) {
+                messager.printMessage(Diagnostic.Kind.ERROR, e.getMessage());
+            }
         }
         return true;
     }

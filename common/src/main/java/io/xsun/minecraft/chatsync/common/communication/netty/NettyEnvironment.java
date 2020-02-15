@@ -14,18 +14,18 @@ import io.netty.channel.socket.ServerSocketChannel;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.xsun.minecraft.chatsync.common.LogManager;
 import io.xsun.minecraft.chatsync.common.communication.ClientFactory;
 import io.xsun.minecraft.chatsync.common.communication.CommunicationEnvironment;
 import io.xsun.minecraft.chatsync.common.communication.ServerFactory;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 import java.util.function.Supplier;
 
 public final class NettyEnvironment implements CommunicationEnvironment {
 
-    private final static Logger LOG = LoggerFactory.getLogger(NettyEnvironment.class);
+    private final Logger log;
     private final Supplier<EventLoopGroup> groupConstructor;
     private final Class<? extends SocketChannel> scType;
     private final Class<? extends ServerSocketChannel> sscType;
@@ -34,21 +34,22 @@ public final class NettyEnvironment implements CommunicationEnvironment {
     private NettyEnvironment(Supplier<EventLoopGroup> groupConstructor,
                              Class<? extends SocketChannel> scType,
                              Class<? extends ServerSocketChannel> sscType) {
+        this.log = LogManager.getInstance().getLogger(NettyEnvironment.class);
         this.groupConstructor = groupConstructor;
         this.scType = scType;
         this.sscType = sscType;
+
+        log.info("NettyEnvironment is created with [{},{},{}]",
+                groupConstructor.getClass().getSimpleName(),
+                scType.getSimpleName(), sscType.getSimpleName());
     }
 
     public static NettyEnvironment defaultEnv() {
-        LOG.info("Use default netty environment");
         if (Epoll.isAvailable()) {
-            LOG.info("Use Epoll");
             return new NettyEnvironment(EpollEventLoopGroup::new, EpollSocketChannel.class, EpollServerSocketChannel.class);
         } else if (KQueue.isAvailable()) {
-            LOG.info("Use KQueue");
             return new NettyEnvironment(KQueueEventLoopGroup::new, KQueueSocketChannel.class, KQueueServerSocketChannel.class);
         } else {
-            LOG.info("Use Java NIO");
             return new NettyEnvironment(NioEventLoopGroup::new, NioSocketChannel.class, NioServerSocketChannel.class);
         }
     }
@@ -56,20 +57,19 @@ public final class NettyEnvironment implements CommunicationEnvironment {
     public static NettyEnvironment customEnv(Supplier<EventLoopGroup> groupConstructor,
                                              Class<? extends SocketChannel> scType,
                                              Class<? extends ServerSocketChannel> sscType) {
-        LOG.info("Use custom netty environment");
         return new NettyEnvironment(groupConstructor, scType, sscType);
     }
 
     @Override
     public void init() {
-        LOG.info("NettyEnvironment is initializing");
+        log.info("NettyEnvironment is initializing");
         group = groupConstructor.get();
-        LOG.info("NettyEnvironment is using {}", group.getClass().getSimpleName());
+        log.info("NettyEnvironment is using {}", group.getClass().getSimpleName());
     }
 
     @Override
     public void shutdown() {
-        LOG.info("NettyEnvironment is closing");
+        log.info("NettyEnvironment is closing");
         group.shutdownGracefully();
         group = null;
     }
@@ -80,14 +80,14 @@ public final class NettyEnvironment implements CommunicationEnvironment {
 
     @Override
     public ClientFactory getClientFactory() {
-        LOG.info("Creating new NettyClientFactory");
+        log.info("Creating new NettyClientFactory");
         checkInit();
         return new NettyClientFactory(group, scType);
     }
 
     @Override
     public ServerFactory getServerFactory() {
-        LOG.info("Creating new NettyServerFactory");
+        log.info("Creating new NettyServerFactory");
         checkInit();
         return new NettyServerFactory(group, sscType);
     }

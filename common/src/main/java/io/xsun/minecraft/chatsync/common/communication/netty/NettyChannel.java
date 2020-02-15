@@ -3,41 +3,42 @@ package io.xsun.minecraft.chatsync.common.communication.netty;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.socket.SocketChannel;
+import io.xsun.minecraft.chatsync.common.LogManager;
 import io.xsun.minecraft.chatsync.common.communication.AbstractChannel;
 import io.xsun.minecraft.chatsync.common.communication.IChannel;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 
 public class NettyChannel<MessageType> extends AbstractChannel<MessageType> implements IChannel<MessageType> {
 
-    private static final Logger LOG = LoggerFactory.getLogger(NettyChannel.class);
+    private final Logger log;
     private final SocketChannel nettyChannel;
 
     public NettyChannel(SocketChannel nettyChannel) {
-        LOG.info("Creating new NettyChannel of {}", nettyChannel);
+        log = LogManager.getInstance().getLogger(NettyChannel.class);
+        log.info("Creating new NettyChannel of {}", nettyChannel);
         nettyChannel.pipeline()
                 .addLast(new ChannelInboundHandlerAdapter() {
                     @Override
                     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-                        LOG.debug("NettyChannel received a message [{}]", msg);
+                        log.debug("NettyChannel received a message [{}]", msg);
                         onMessage.accept((MessageType) msg);
                     }
 
                     @Override
                     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-                        LOG.warn("Exception caught in NettyChannel", cause);
+                        log.warn("Exception caught in NettyChannel", cause);
                         boolean shouldClose = onException.test(cause);
                         if (shouldClose) {
-                            LOG.error("NettyChannel is closing because of an unexpected error");
+                            log.error("NettyChannel is closing because of an unexpected error");
                             NettyChannel.this.close();
                         }
                     }
 
                     @Override
                     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-                        LOG.info("Channel disconnected");
+                        log.info("Channel disconnected");
                         super.channelInactive(ctx);
                         onClose.onClose();
                     }
@@ -57,18 +58,18 @@ public class NettyChannel<MessageType> extends AbstractChannel<MessageType> impl
 
     @Override
     public void close() {
-        LOG.info("NettyChannel is closing");
+        log.info("NettyChannel is closing");
         try {
             nettyChannel.close().sync();
         } catch (InterruptedException e) {
-            LOG.warn("NettyChannel's closing process is interrupted", e);
+            log.warn("NettyChannel's closing process is interrupted", e);
         }
-        LOG.info("NettyChannel is closed");
+        log.info("NettyChannel is closed");
     }
 
     @Override
     public void send(MessageType message) {
-        LOG.debug("NettyChannel is sending message [{}]", message);
+        log.debug("NettyChannel is sending message [{}]", message);
         nettyChannel.writeAndFlush(message).syncUninterruptibly();
     }
 }

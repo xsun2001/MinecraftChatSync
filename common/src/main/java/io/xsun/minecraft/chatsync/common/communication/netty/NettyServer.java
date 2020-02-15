@@ -6,10 +6,10 @@ import io.netty.channel.socket.ServerSocketChannel;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.codec.MessageToByteEncoder;
+import io.xsun.minecraft.chatsync.common.LogManager;
 import io.xsun.minecraft.chatsync.common.communication.IChannel;
 import io.xsun.minecraft.chatsync.common.communication.IServer;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 import java.util.Collections;
@@ -19,7 +19,7 @@ import java.util.function.Consumer;
 
 class NettyServer<MessageType> implements IServer<MessageType> {
 
-    private final static Logger LOG = LoggerFactory.getLogger(NettyServer.class);
+    private final Logger log;
     private final Channel parentChannel;
     private final CopyOnWriteArrayList<IChannel<MessageType>> connectedChannels = new CopyOnWriteArrayList<>();
     private volatile Consumer<IChannel<MessageType>> onChannelConnected = ch -> {
@@ -34,7 +34,8 @@ class NettyServer<MessageType> implements IServer<MessageType> {
 
     protected NettyServer(EventLoopGroup group, Class<? extends ServerSocketChannel> sscType,
                           int port, Consumer<SocketChannel> preInit) {
-        LOG.info("NettyServer is creating on port {}", port);
+        this.log = LogManager.getInstance().getLogger(NettyServer.class);
+        log.info("NettyServer is creating on port {}", port);
         ServerBootstrap bootstrap = new ServerBootstrap();
         bootstrap.group(group)
                 .channel(sscType)
@@ -42,13 +43,13 @@ class NettyServer<MessageType> implements IServer<MessageType> {
                     @Override
                     protected void initChannel(SocketChannel ch) throws Exception {
                         final String remoteAddress = ch.remoteAddress().toString();
-                        LOG.info("Accepting new connection from {}", remoteAddress);
+                        log.info("Accepting new connection from {}", remoteAddress);
                         preInit.accept(ch);
                         NettyChannel<MessageType> myChannel = new NettyChannel<>(ch);
                         ch.pipeline().addLast(new ChannelInboundHandlerAdapter() {
                             @Override
                             public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-                                LOG.info("Channel from {} disconnected", remoteAddress);
+                                log.info("Channel from {} disconnected", remoteAddress);
                                 super.channelInactive(ctx);
                                 connectedChannels.remove(myChannel);
                                 onChannelDisconnected.accept(myChannel);
@@ -56,7 +57,7 @@ class NettyServer<MessageType> implements IServer<MessageType> {
                         });
                         connectedChannels.add(myChannel);
                         onChannelConnected.accept(myChannel);
-                        LOG.info("Channel from {} connected", remoteAddress);
+                        log.info("Channel from {} connected", remoteAddress);
                     }
                 })
                 .option(ChannelOption.SO_BACKLOG, 128)
@@ -71,14 +72,14 @@ class NettyServer<MessageType> implements IServer<MessageType> {
 
     @Override
     public void close() {
-        LOG.info("NettyServer on port {} is closing", ((InetSocketAddress) parentChannel.localAddress()).getPort());
+        log.info("NettyServer on port {} is closing", ((InetSocketAddress) parentChannel.localAddress()).getPort());
         try {
             connectedChannels.forEach(IChannel::close);
             parentChannel.close().sync();
         } catch (InterruptedException e) {
-            LOG.warn("NettyServer's closing process is interrupted", e);
+            log.warn("NettyServer's closing process is interrupted", e);
         }
-        LOG.info("NettyServer is closed");
+        log.info("NettyServer is closed");
     }
 
     @Override

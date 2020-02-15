@@ -13,6 +13,7 @@
         <module>common</module>
         <module>common-annotations</module>
         <module>insidenode-common</module>
+        <module>test</module>
     </modules>
 
     <properties>
