@@ -1,5 +1,6 @@
 package io.xsun.minecraft.chatsync.insidenode.common;
 
+import io.xsun.minecraft.chatsync.common.LogManager;
 import io.xsun.minecraft.chatsync.common.communication.*;
 import io.xsun.minecraft.chatsync.common.communication.insideprotocol.InsideProtocolResolver;
 import io.xsun.minecraft.chatsync.common.communication.insideprotocol.message.ChatMessage;
@@ -23,17 +24,17 @@ public class InsideNode {
     public InsideNode(InsideNodeConfig config, IMinecraftServerApi mcServerApi, CommunicationEnvironment commEnv) {
         this.config = config;
         this.mcServerApi = mcServerApi;
-        this.log = mcServerApi.getLogger();
+        this.log = LogManager.getInstance().getLogger(InsideNode.class);
         this.clientFactory = commEnv.getClientFactory();
         this.resolver = new InsideProtocolResolver();
         connectToMaster();
         initChannel();
     }
 
-    public void sendMessage(MessageBase msg){
-        if(channel != null){
+    public void sendMessage(MessageBase msg) {
+        if (channel != null) {
             channel.send(msg);
-        }else {
+        } else {
             log.warn("Discarding message [{}] because channel is not available", msg);
         }
     }

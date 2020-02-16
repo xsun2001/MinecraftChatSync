@@ -1,7 +1,6 @@
 package io.xsun.minecraft.chatsync.insidenode.common;
 
 import io.xsun.minecraft.chatsync.common.communication.CommunicationEnvironment;
-import org.slf4j.Logger;
 
 public interface IMinecraftServerApi {
     static String format(String formatHint, String... args) {
@@ -26,8 +25,6 @@ public interface IMinecraftServerApi {
         }
         return good ? builder.toString() : "Format Error";
     }
-
-    Logger getLogger();
 
     CommunicationEnvironment getCommunicationEnvironment();
 
