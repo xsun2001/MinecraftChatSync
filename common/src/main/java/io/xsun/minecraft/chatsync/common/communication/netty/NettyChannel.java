@@ -3,16 +3,16 @@ package io.xsun.minecraft.chatsync.common.communication.netty;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.socket.SocketChannel;
-import io.xsun.minecraft.chatsync.common.LogManager;
 import io.xsun.minecraft.chatsync.common.communication.AbstractChannel;
 import io.xsun.minecraft.chatsync.common.communication.IChannel;
-import org.slf4j.Logger;
+import io.xsun.minecraft.chatsync.common.logging.CSLogger;
+import io.xsun.minecraft.chatsync.common.logging.LogManager;
 
 import java.net.InetSocketAddress;
 
 public class NettyChannel<MessageType> extends AbstractChannel<MessageType> implements IChannel<MessageType> {
 
-    private final Logger log;
+    private final CSLogger log;
     private final SocketChannel nettyChannel;
 
     public NettyChannel(SocketChannel nettyChannel) {

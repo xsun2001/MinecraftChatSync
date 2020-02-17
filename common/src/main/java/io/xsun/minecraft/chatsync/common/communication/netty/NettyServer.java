@@ -6,10 +6,10 @@ import io.netty.channel.socket.ServerSocketChannel;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.codec.MessageToByteEncoder;
-import io.xsun.minecraft.chatsync.common.LogManager;
 import io.xsun.minecraft.chatsync.common.communication.IChannel;
 import io.xsun.minecraft.chatsync.common.communication.IServer;
-import org.slf4j.Logger;
+import io.xsun.minecraft.chatsync.common.logging.CSLogger;
+import io.xsun.minecraft.chatsync.common.logging.LogManager;
 
 import java.net.InetSocketAddress;
 import java.util.Collections;
@@ -19,7 +19,7 @@ import java.util.function.Consumer;
 
 class NettyServer<MessageType> implements IServer<MessageType> {
 
-    private final Logger log;
+    private final CSLogger log;
     private final Channel parentChannel;
     private final CopyOnWriteArrayList<IChannel<MessageType>> connectedChannels = new CopyOnWriteArrayList<>();
     private volatile Consumer<IChannel<MessageType>> onChannelConnected = ch -> {

@@ -1,19 +1,19 @@
 package io.xsun.minecraft.chatsync.insidenode.common;
 
-import io.xsun.minecraft.chatsync.common.LogManager;
 import io.xsun.minecraft.chatsync.common.communication.*;
 import io.xsun.minecraft.chatsync.common.communication.insideprotocol.InsideProtocolResolver;
 import io.xsun.minecraft.chatsync.common.communication.insideprotocol.message.ChatMessage;
 import io.xsun.minecraft.chatsync.common.communication.insideprotocol.message.MessageBase;
 import io.xsun.minecraft.chatsync.common.communication.insideprotocol.message.MessageSourceInfo;
-import org.slf4j.Logger;
+import io.xsun.minecraft.chatsync.common.logging.CSLogger;
+import io.xsun.minecraft.chatsync.common.logging.LogManager;
 
 import java.net.InetSocketAddress;
 import java.util.Timer;
 import java.util.TimerTask;
 
 public class InsideNode {
-    private final Logger log;
+    private final CSLogger log;
     private final InsideNodeConfig config;
     private final IMinecraftServerApi mcServerApi;
     private final ClientFactory clientFactory;

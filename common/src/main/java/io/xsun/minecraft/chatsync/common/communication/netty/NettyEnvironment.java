@@ -14,18 +14,18 @@ import io.netty.channel.socket.ServerSocketChannel;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.xsun.minecraft.chatsync.common.LogManager;
 import io.xsun.minecraft.chatsync.common.communication.ClientFactory;
 import io.xsun.minecraft.chatsync.common.communication.CommunicationEnvironment;
 import io.xsun.minecraft.chatsync.common.communication.ServerFactory;
-import org.slf4j.Logger;
+import io.xsun.minecraft.chatsync.common.logging.CSLogger;
+import io.xsun.minecraft.chatsync.common.logging.LogManager;
 
 import java.util.Objects;
 import java.util.function.Supplier;
 
 public final class NettyEnvironment implements CommunicationEnvironment {
 
-    private final Logger log;
+    private final CSLogger log;
     private final Supplier<EventLoopGroup> groupConstructor;
     private final Class<? extends SocketChannel> scType;
     private final Class<? extends ServerSocketChannel> sscType;

@@ -11,10 +11,10 @@ import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory;
 import io.netty.handler.codec.http.websocketx.WebSocketClientProtocolHandler;
 import io.netty.handler.codec.http.websocketx.WebSocketVersion;
 import io.netty.handler.codec.http.websocketx.extensions.compression.WebSocketClientCompressionHandler;
-import io.xsun.minecraft.chatsync.common.LogManager;
 import io.xsun.minecraft.chatsync.common.communication.ClientFactory;
 import io.xsun.minecraft.chatsync.common.communication.IChannel;
-import org.slf4j.Logger;
+import io.xsun.minecraft.chatsync.common.logging.CSLogger;
+import io.xsun.minecraft.chatsync.common.logging.LogManager;
 
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -22,7 +22,7 @@ import java.net.URISyntaxException;
 
 final class NettyClientFactory implements ClientFactory {
 
-    private final Logger log;
+    private final CSLogger log;
 
     private final EventLoopGroup worker;
     private final Class<? extends SocketChannel> scType;

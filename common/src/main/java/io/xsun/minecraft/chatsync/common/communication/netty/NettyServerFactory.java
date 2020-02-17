@@ -7,15 +7,14 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.handler.codec.http.websocketx.extensions.compression.WebSocketClientCompressionHandler;
-import io.xsun.minecraft.chatsync.common.LogManager;
 import io.xsun.minecraft.chatsync.common.communication.IServer;
 import io.xsun.minecraft.chatsync.common.communication.ServerFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.xsun.minecraft.chatsync.common.logging.CSLogger;
+import io.xsun.minecraft.chatsync.common.logging.LogManager;
 
 final class NettyServerFactory implements ServerFactory {
 
-    private final Logger log;
+    private final CSLogger log;
     private final EventLoopGroup group;
     private final Class<? extends ServerSocketChannel> sscType;
 

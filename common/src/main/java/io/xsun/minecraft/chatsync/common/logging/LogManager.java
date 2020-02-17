@@ -1,13 +1,10 @@
-package io.xsun.minecraft.chatsync.common;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+package io.xsun.minecraft.chatsync.common.logging;
 
 import java.util.Objects;
 import java.util.function.Supplier;
 
 public abstract class LogManager {
-    private static Supplier<LogManager> factory = Slf4jLogManagerDelegate::new;
+    private static Supplier<LogManager> factory;
 
     private static LogManager INSTANCE;
 
@@ -22,12 +19,6 @@ public abstract class LogManager {
         return Objects.requireNonNull(INSTANCE);
     }
 
-    public abstract Logger getLogger(Class<?> clazz);
+    public abstract CSLogger getLogger(Class<?> clazz);
 
-    private static class Slf4jLogManagerDelegate extends LogManager {
-        @Override
-        public Logger getLogger(Class<?> clazz) {
-            return LoggerFactory.getLogger(clazz);
-        }
-    }
 }
