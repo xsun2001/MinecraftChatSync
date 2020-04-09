@@ -6,12 +6,14 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="common" />
-        <module name="test" />
-        <module name="master" />
         <module name="insidenode-common" />
-        <module name="common-annotations" />
+        <module name="common" />
+        <module name="master" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="common-annotations" target="8" />
+      <module name="test" target="8" />
+    </bytecodeTargetLevel>
   </component>
 </project>
