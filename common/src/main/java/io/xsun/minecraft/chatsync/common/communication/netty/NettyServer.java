@@ -1,5 +1,6 @@
 package io.xsun.minecraft.chatsync.common.communication.netty;
 
+import com.google.gson.JsonObject;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.socket.ServerSocketChannel;
@@ -17,25 +18,25 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 
-class NettyServer<MessageType> implements IServer<MessageType> {
+class NettyServer implements IServer {
 
     private final CSLogger log;
     private final Channel parentChannel;
-    private final CopyOnWriteArrayList<IChannel<MessageType>> connectedChannels = new CopyOnWriteArrayList<>();
-    private volatile Consumer<IChannel<MessageType>> onChannelConnected = ch -> {
+    private final CopyOnWriteArrayList<IChannel> connectedChannels = new CopyOnWriteArrayList<>();
+    private volatile Consumer<IChannel> onChannelConnected = ch -> {
     };
-    private volatile Consumer<IChannel<MessageType>> onChannelDisconnected = ch -> {
+    private volatile Consumer<IChannel> onChannelDisconnected = ch -> {
     };
 
-    protected NettyServer(EventLoopGroup group, Class<? extends ServerSocketChannel> sscType, int port,
-                          ByteToMessageDecoder decoder, MessageToByteEncoder<MessageType> encoder) {
-        this(group, sscType, port, ch -> ch.pipeline().addLast(decoder, encoder));
+    protected NettyServer(EventLoopGroup group, Class<? extends ServerSocketChannel> sscType, InetSocketAddress bindAddress,
+                          ByteToMessageDecoder decoder, MessageToByteEncoder<JsonObject> encoder) {
+        this(group, sscType, bindAddress, ch -> ch.pipeline().addLast(decoder, encoder));
     }
 
     protected NettyServer(EventLoopGroup group, Class<? extends ServerSocketChannel> sscType,
-                          int port, Consumer<SocketChannel> preInit) {
+                          InetSocketAddress bindAddress, Consumer<SocketChannel> preInit) {
         this.log = LogManager.getInstance().getLogger(NettyServer.class);
-        log.info("NettyServer is creating on port {}", port);
+        log.info("NettyServer is creating on {}", bindAddress);
         ServerBootstrap bootstrap = new ServerBootstrap();
         bootstrap.group(group)
                 .channel(sscType)
@@ -45,7 +46,7 @@ class NettyServer<MessageType> implements IServer<MessageType> {
                         final String remoteAddress = ch.remoteAddress().toString();
                         log.info("Accepting new connection from {}", remoteAddress);
                         preInit.accept(ch);
-                        NettyChannel<MessageType> myChannel = new NettyChannel<>(ch);
+                        NettyChannel myChannel = new NettyChannel(ch);
                         ch.pipeline().addLast(new ChannelInboundHandlerAdapter() {
                             @Override
                             public void channelInactive(ChannelHandlerContext ctx) throws Exception {
@@ -62,7 +63,7 @@ class NettyServer<MessageType> implements IServer<MessageType> {
                 })
                 .option(ChannelOption.SO_BACKLOG, 128)
                 .childOption(ChannelOption.SO_KEEPALIVE, true);
-        parentChannel = bootstrap.bind(port).syncUninterruptibly().channel();
+        parentChannel = bootstrap.bind(bindAddress).syncUninterruptibly().channel();
     }
 
     @Override
@@ -83,17 +84,17 @@ class NettyServer<MessageType> implements IServer<MessageType> {
     }
 
     @Override
-    public void setOnChannelConnected(Consumer<IChannel<MessageType>> onChannelConnected) {
+    public void setOnChannelConnected(Consumer<IChannel> onChannelConnected) {
         this.onChannelConnected = onChannelConnected;
     }
 
     @Override
-    public void setOnChannelDisconnected(Consumer<IChannel<MessageType>> onChannelDisconnected) {
+    public void setOnChannelDisconnected(Consumer<IChannel> onChannelDisconnected) {
         this.onChannelDisconnected = onChannelDisconnected;
     }
 
     @Override
-    public List<IChannel<MessageType>> getConnectedChannels() {
+    public List<IChannel> getConnectedChannels() {
         return Collections.unmodifiableList(connectedChannels);
     }
 }

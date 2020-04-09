@@ -1,6 +1,5 @@
 package io.xsun.minecraft.chatsync.common.communication.netty;
 
-import com.google.gson.JsonObject;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.socket.ServerSocketChannel;
 import io.netty.handler.codec.http.HttpObjectAggregator;
@@ -8,11 +7,12 @@ import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.handler.codec.http.websocketx.extensions.compression.WebSocketClientCompressionHandler;
 import io.xsun.minecraft.chatsync.common.communication.IServer;
-import io.xsun.minecraft.chatsync.common.communication.ServerFactory;
 import io.xsun.minecraft.chatsync.common.logging.CSLogger;
 import io.xsun.minecraft.chatsync.common.logging.LogManager;
 
-final class NettyServerFactory implements ServerFactory {
+import java.net.InetSocketAddress;
+
+final class NettyServerFactory {
 
     private final CSLogger log;
     private final EventLoopGroup group;
@@ -24,16 +24,14 @@ final class NettyServerFactory implements ServerFactory {
         this.sscType = sscType;
     }
 
-    @Override
-    public IServer<JsonObject> newTcpJsonServer(int port) {
-        log.info("Create new netty tcp json server on port {}.", port);
-        return new NettyServer<>(group, sscType, port, CodecUtility.newJsonDecoder(), CodecUtility.newJsonEncoder());
+    public IServer newTcpJsonServer(InetSocketAddress bindAddress) {
+        log.info("Create new netty tcp json server on {}.", bindAddress);
+        return new NettyServer(group, sscType, bindAddress, CodecUtility.newJsonDecoder(), CodecUtility.newJsonEncoder());
     }
 
-    @Override
-    public IServer<JsonObject> newWebsocketJsonServer(int port) {
-        log.info("Create new netty websocket json server on port {}", port);
-        return new NettyServer<>(group, sscType, port,
+    public IServer newWebsocketJsonServer(InetSocketAddress bindAddress) {
+        log.info("Create new netty websocket json server on {}", bindAddress);
+        return new NettyServer(group, sscType, bindAddress,
                 ch -> ch.pipeline()
                         .addLast(new HttpServerCodec())
                         .addLast(new HttpObjectAggregator(65536))

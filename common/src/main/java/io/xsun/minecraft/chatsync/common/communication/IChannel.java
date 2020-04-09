@@ -1,10 +1,12 @@
 package io.xsun.minecraft.chatsync.common.communication;
 
+import com.google.gson.JsonObject;
+
 import java.net.InetSocketAddress;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-public interface IChannel<MessageType> {
+public interface IChannel {
 
     InetSocketAddress getLocalAddress();
 
@@ -12,9 +14,9 @@ public interface IChannel<MessageType> {
 
     void close();
 
-    void send(MessageType message);
+    void send(JsonObject message);
 
-    void setMessageHandler(Consumer<MessageType> onMessage);
+    void setMessageHandler(Consumer<JsonObject> onMessage);
 
     void setExceptionHandler(Predicate<Throwable> onException);
 

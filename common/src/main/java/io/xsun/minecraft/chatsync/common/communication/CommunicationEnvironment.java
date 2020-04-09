@@ -1,11 +1,11 @@
 package io.xsun.minecraft.chatsync.common.communication;
 
-public interface CommunicationEnvironment {
-    void init();
+import java.net.InetSocketAddress;
 
+public interface CommunicationEnvironment {
     void shutdown();
 
-    ClientFactory getClientFactory();
+    IChannel connect(TransferProtocol protocol, InetSocketAddress destination);
 
-    ServerFactory getServerFactory();
+    IServer bind(TransferProtocol protocol, InetSocketAddress bindAddress);
 }

@@ -14,7 +14,9 @@ public interface IMinecraftServerApi {
 
     String getFormatHint(String messageType);
 
-    default void broadcastFormattedMessage(String messageType, String... args) {
+    default void broadcastFormattedMessage(String messageType, Object... args) {
         broadcastMessage(format(getFormatHint(messageType), args));
     }
+
+    void setOnPlayerEntered();
 }

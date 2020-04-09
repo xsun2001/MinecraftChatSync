@@ -14,30 +14,30 @@ import io.netty.channel.socket.ServerSocketChannel;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.xsun.minecraft.chatsync.common.communication.ClientFactory;
 import io.xsun.minecraft.chatsync.common.communication.CommunicationEnvironment;
-import io.xsun.minecraft.chatsync.common.communication.ServerFactory;
+import io.xsun.minecraft.chatsync.common.communication.IChannel;
+import io.xsun.minecraft.chatsync.common.communication.IServer;
+import io.xsun.minecraft.chatsync.common.communication.TransferProtocol;
 import io.xsun.minecraft.chatsync.common.logging.CSLogger;
 import io.xsun.minecraft.chatsync.common.logging.LogManager;
 
-import java.util.Objects;
+import java.net.InetSocketAddress;
 import java.util.function.Supplier;
 
 public final class NettyEnvironment implements CommunicationEnvironment {
 
     private final CSLogger log;
-    private final Supplier<EventLoopGroup> groupConstructor;
-    private final Class<? extends SocketChannel> scType;
-    private final Class<? extends ServerSocketChannel> sscType;
     private EventLoopGroup group;
+    private final NettyClientFactory clientFactory;
+    private final NettyServerFactory serverFactory;
 
     private NettyEnvironment(Supplier<EventLoopGroup> groupConstructor,
                              Class<? extends SocketChannel> scType,
                              Class<? extends ServerSocketChannel> sscType) {
         this.log = LogManager.getInstance().getLogger(NettyEnvironment.class);
-        this.groupConstructor = groupConstructor;
-        this.scType = scType;
-        this.sscType = sscType;
+        this.group = groupConstructor.get();
+        this.clientFactory = new NettyClientFactory(group, scType);
+        this.serverFactory = new NettyServerFactory(group, sscType);
 
         log.info("NettyEnvironment is created with [{},{},{}]",
                 groupConstructor.getClass().getSimpleName(),
@@ -61,34 +61,23 @@ public final class NettyEnvironment implements CommunicationEnvironment {
     }
 
     @Override
-    public void init() {
-        log.info("NettyEnvironment is initializing");
-        group = groupConstructor.get();
-        log.info("NettyEnvironment is using {}", group.getClass().getSimpleName());
-    }
-
-    @Override
     public void shutdown() {
         log.info("NettyEnvironment is closing");
         group.shutdownGracefully();
         group = null;
     }
 
-    private void checkInit() {
-        Objects.requireNonNull(group, "Environment isn't initialized");
+    @Override
+    public IChannel connect(TransferProtocol protocol, InetSocketAddress destination) {
+        return protocol == TransferProtocol.TCP ?
+                clientFactory.connectTcp(destination) :
+                clientFactory.connectWebsocket(destination);
     }
 
     @Override
-    public ClientFactory getClientFactory() {
-        log.info("Creating new NettyClientFactory");
-        checkInit();
-        return new NettyClientFactory(group, scType);
-    }
-
-    @Override
-    public ServerFactory getServerFactory() {
-        log.info("Creating new NettyServerFactory");
-        checkInit();
-        return new NettyServerFactory(group, sscType);
+    public IServer bind(TransferProtocol protocol, InetSocketAddress bindAddress) {
+        return protocol == TransferProtocol.TCP ?
+                serverFactory.newTcpJsonServer(bindAddress) :
+                serverFactory.newWebsocketJsonServer(bindAddress);
     }
 }

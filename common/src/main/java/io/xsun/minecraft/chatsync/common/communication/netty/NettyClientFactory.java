@@ -1,6 +1,5 @@
 package io.xsun.minecraft.chatsync.common.communication.netty;
 
-import com.google.gson.JsonObject;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.socket.SocketChannel;
@@ -11,7 +10,6 @@ import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory;
 import io.netty.handler.codec.http.websocketx.WebSocketClientProtocolHandler;
 import io.netty.handler.codec.http.websocketx.WebSocketVersion;
 import io.netty.handler.codec.http.websocketx.extensions.compression.WebSocketClientCompressionHandler;
-import io.xsun.minecraft.chatsync.common.communication.ClientFactory;
 import io.xsun.minecraft.chatsync.common.communication.IChannel;
 import io.xsun.minecraft.chatsync.common.logging.CSLogger;
 import io.xsun.minecraft.chatsync.common.logging.LogManager;
@@ -20,7 +18,7 @@ import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-final class NettyClientFactory implements ClientFactory {
+final class NettyClientFactory {
 
     private final CSLogger log;
 
@@ -42,8 +40,7 @@ final class NettyClientFactory implements ClientFactory {
         return bootstrap;
     }
 
-    @Override
-    public IChannel<JsonObject> connectToTcpJsonServer(InetSocketAddress address) {
+    public IChannel connectTcp(InetSocketAddress address) {
         log.info("Try to connect to {} and create tcp json channel", address);
         try {
             Bootstrap bootstrap = createBootstrap(new ChannelInitializer<SocketChannel>() {
@@ -54,15 +51,14 @@ final class NettyClientFactory implements ClientFactory {
             });
             SocketChannel ch = (SocketChannel) bootstrap.connect(address).sync().channel();
             log.info("Channel connected");
-            return new NettyChannel<>(ch);
+            return new NettyChannel(ch);
         } catch (InterruptedException e) {
             log.error("Channel connection is interrupted", e);
         }
         return null;
     }
 
-    @Override
-    public IChannel<JsonObject> connectToWebsocketJsonServer(InetSocketAddress address) {
+    public IChannel connectWebsocket(InetSocketAddress address) {
         log.info("Try to connect to {} and create websocket json channel", address);
         try {
             final WebSocketClientProtocolHandler wsProtocolHandler = new WebSocketClientProtocolHandler(
@@ -90,7 +86,7 @@ final class NettyClientFactory implements ClientFactory {
             SocketChannel ch = (SocketChannel) bootstrap.connect(address).sync().channel();
             wsHandshakeHandler.getHandshakeFuture().sync();
             log.info("Channel connected");
-            return new NettyChannel<>(ch);
+            return new NettyChannel(ch);
         } catch (InterruptedException e) {
             log.error("Channel connection is interrupted", e);
         } catch (URISyntaxException e) {

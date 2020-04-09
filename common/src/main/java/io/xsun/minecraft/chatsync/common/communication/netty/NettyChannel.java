@@ -1,19 +1,27 @@
 package io.xsun.minecraft.chatsync.common.communication.netty;
 
+import com.google.gson.JsonObject;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.socket.SocketChannel;
-import io.xsun.minecraft.chatsync.common.communication.AbstractChannel;
+import io.xsun.minecraft.chatsync.common.communication.CloseHandler;
 import io.xsun.minecraft.chatsync.common.communication.IChannel;
 import io.xsun.minecraft.chatsync.common.logging.CSLogger;
 import io.xsun.minecraft.chatsync.common.logging.LogManager;
 
 import java.net.InetSocketAddress;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 
-public class NettyChannel<MessageType> extends AbstractChannel<MessageType> implements IChannel<MessageType> {
+public class NettyChannel implements IChannel {
 
     private final CSLogger log;
     private final SocketChannel nettyChannel;
+    protected volatile Consumer<JsonObject> onMessage = message -> {
+    };
+    protected volatile Predicate<Throwable> onException = exception -> true;
+    protected volatile CloseHandler onClose = () -> {
+    };
 
     public NettyChannel(SocketChannel nettyChannel) {
         log = LogManager.getInstance().getLogger(NettyChannel.class);
@@ -23,7 +31,7 @@ public class NettyChannel<MessageType> extends AbstractChannel<MessageType> impl
                     @Override
                     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
                         log.debug("NettyChannel received a message [{}]", msg);
-                        onMessage.accept((MessageType) msg);
+                        onMessage.accept((JsonObject) msg);
                     }
 
                     @Override
@@ -44,6 +52,21 @@ public class NettyChannel<MessageType> extends AbstractChannel<MessageType> impl
                     }
                 });
         this.nettyChannel = nettyChannel;
+    }
+
+    @Override
+    public void setMessageHandler(Consumer<JsonObject> onMessage) {
+        this.onMessage = onMessage;
+    }
+
+    @Override
+    public void setExceptionHandler(Predicate<Throwable> onException) {
+        this.onException = onException;
+    }
+
+    @Override
+    public void setCloseHandler(CloseHandler onClose) {
+        this.onClose = onClose;
     }
 
     @Override
@@ -68,7 +91,7 @@ public class NettyChannel<MessageType> extends AbstractChannel<MessageType> impl
     }
 
     @Override
-    public void send(MessageType message) {
+    public void send(JsonObject message) {
         log.debug("NettyChannel is sending message [{}]", message);
         nettyChannel.writeAndFlush(message).syncUninterruptibly();
     }
