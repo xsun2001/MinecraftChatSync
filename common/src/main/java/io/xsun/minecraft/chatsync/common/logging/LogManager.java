@@ -13,6 +13,9 @@ public abstract class LogManager {
     }
 
     public synchronized static LogManager getInstance() {
+        if (factory == null) {
+            factory = DefaultLogManager::new;
+        }
         if (INSTANCE == null) {
             INSTANCE = factory.get();
         }
@@ -20,5 +23,6 @@ public abstract class LogManager {
     }
 
     public abstract CSLogger getLogger(Class<?> clazz);
+
 
 }
